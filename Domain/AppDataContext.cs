@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace AutoMapperProjectionsNullableValueObjectsRepro;
+namespace AutoMapperProjectionsNullableValueObjectsRepro.Domain;
 
 public class AppDataContext : DbContext
 {

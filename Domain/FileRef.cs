@@ -1,8 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
-namespace AutoMapperProjectionsNullableValueObjectsRepro;
+namespace AutoMapperProjectionsNullableValueObjectsRepro.Domain;
 
+// Value object
 [Owned]
 public record FileRef
 {
@@ -13,7 +14,7 @@ public record FileRef
     }
 
     public Guid FileId { get; protected init; }
-    
+
     [MaxLength(32)]
     public string FileType { get; protected init; }
 }

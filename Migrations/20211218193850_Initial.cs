@@ -16,8 +16,8 @@ namespace AutoMapperProjectionsNullableValueObjectsRepro.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Body = table.Column<string>(type: "nvarchar(1024)", maxLength: 1024, nullable: false),
-                    Attachment_FileId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    Attachment_FileType = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: true)
+                    Metadata_Attachment_FileId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    Metadata_Attachment_FileType = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: true)
                 },
                 constraints: table =>
                 {

@@ -1,4 +1,4 @@
-﻿namespace AutoMapperProjectionsNullableValueObjectsRepro;
+﻿namespace AutoMapperProjectionsNullableValueObjectsRepro.DTOs;
 
 public class FileRefDto
 {

@@ -1,4 +1,6 @@
 using AutoMapper;
+using AutoMapperProjectionsNullableValueObjectsRepro.Domain;
+using AutoMapperProjectionsNullableValueObjectsRepro.DTOs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -14,18 +16,20 @@ public class UnitTest1
         db.Migrate();
     }
 
-    private static void SetUpDb()
+    private static void SetUpDb(bool hasAttachment)
     {
         using (var db = new AppDataContext())
         {
-            
+
             db.Messages.RemoveRange(db.Messages);
             db.SaveChanges();
         }
 
         using (var db = new AppDataContext())
         {
-            db.Messages.Add(new Message(body: "myBody"));
+            var attachment = hasAttachment ? new FileRef(Guid.NewGuid(), "image/png") : null;
+
+            db.Messages.Add(new Message(body: "myBody", metadata: new MessageMetadata(attachment)));
             db.SaveChanges();
         }
     }
@@ -35,6 +39,7 @@ public class UnitTest1
         var config = new MapperConfiguration(cfg =>
         {
             cfg.CreateMap<FileRef, FileRefDto>();
+            cfg.CreateMap<MessageMetadata, MessageMetadataDto>();
             cfg.CreateMap<Message, MessageDto>();
         });
 
@@ -42,33 +47,70 @@ public class UnitTest1
 
         return config.CreateMapper();
     }
-  
-    [TestMethod]
-    public void GetMessage_NoProjection()
+
+    private static void ValidateMessageDto(MessageDto messageDto, bool hasAttachment)
     {
-        SetUpDb();
+        Assert.IsTrue(messageDto.Id > 0);
+        Assert.AreEqual("myBody", messageDto.Body);
+        Assert.IsNotNull(messageDto.Metadata);
+
+        if (hasAttachment)
+        {
+            Assert.IsNotNull(messageDto.Metadata.Attachment);
+        }
+        else
+        {
+            Assert.IsNull(messageDto.Metadata.Attachment);
+        }
+    }
+
+    [TestMethod]
+    public void NullAttachment_NoProjection()
+    {
+        SetUpDb(hasAttachment: false);
         var mapper = GetMapper();
 
         using var db = new AppDataContext();
         var message = db.Messages.Single();
         var messageDto = mapper.Map<MessageDto>(message);
 
-        Assert.IsTrue(messageDto.Id > 0);
-        Assert.AreEqual("myBody", messageDto.Body);
-        Assert.IsNull(messageDto.Attachment);
+        ValidateMessageDto(messageDto, hasAttachment: false);
     }
 
     [TestMethod]
-    public void GetMessage_Projection()
+    public void NullAttachment_Projection()
     {
-        SetUpDb();
+        SetUpDb(hasAttachment: false);
+        var mapper = GetMapper();
+
+        using var db = new AppDataContext();
+        var messageDto = mapper.ProjectTo<MessageDto>(db.Messages.AsNoTracking()).Single(); // ERROR
+
+        ValidateMessageDto(messageDto, hasAttachment: false);
+    }
+
+    [TestMethod]
+    public void NonNullAttachment_NoProjection()
+    {
+        SetUpDb(hasAttachment: true);
+        var mapper = GetMapper();
+
+        using var db = new AppDataContext();
+        var message = db.Messages.Single();
+        var messageDto = mapper.Map<MessageDto>(message);
+
+        ValidateMessageDto(messageDto, hasAttachment: true);
+    }
+
+    [TestMethod]
+    public void NonNullAttachment_Projection()
+    {
+        SetUpDb(hasAttachment: true);
         var mapper = GetMapper();
 
         using var db = new AppDataContext();
         var messageDto = mapper.ProjectTo<MessageDto>(db.Messages.AsNoTracking()).Single();
 
-        Assert.IsTrue(messageDto.Id > 0);
-        Assert.AreEqual("myBody", messageDto.Body);
-        Assert.IsNull(messageDto.Attachment);
+        ValidateMessageDto(messageDto, hasAttachment: true);
     }
 }
